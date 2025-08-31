@@ -14,7 +14,7 @@ def scrape_daraz_deals(query='discount', region='bd'):
     d = make_chromium_driver()
     try:
         d.get(url)
-        time.sleep(3)  # simple wait; swap to WebDriverWait if you want
+        time.sleep(3)
         deals = []
         cards = d.find_elements(By.CSS_SELECTOR, 'div[data-qa-locator="product-item"]')
         for c in cards:

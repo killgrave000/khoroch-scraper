@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl ca-certificates gnupg unzip wget \
-    chromium fonts-liberation xvfb \
+    chromium fonts-liberation \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -15,12 +15,12 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# app
 COPY server.py utils_browser.py daraz_selenium_scraper.py chaldal_selenium_scraper.py ./
 
-# (optional) healthcheck
+# Healthcheck (optional)
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD curl --fail http://localhost:${PORT}/api/deals || exit 1
 
-# SHELL FORM so $PORT expands (with local default 10000)
-CMD ["sh","-c","exec gunicorn -w 2 -b 0.0.0.0:${PORT:-10000} server:app"]
+# single worker/threads by default; shell form so $PORT expands
+ENV WEB_CONCURRENCY=1 GUNICORN_THREADS=1 GUNICORN_TIMEOUT=180
+CMD ["sh","-c","exec gunicorn -w ${WEB_CONCURRENCY:-1} --threads ${GUNICORN_THREADS:-1} -b 0.0.0.0:${PORT:-10000} --timeout ${GUNICORN_TIMEOUT:-180} server:app"]
