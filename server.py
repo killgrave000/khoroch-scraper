@@ -7,24 +7,33 @@ from daraz_selenium_scraper import scrape_daraz_deals
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/api/deals', methods=['GET'])
+@app.get("/")
+def root():
+    return {
+        "ok": True,
+        "service": "khoroch-deals-scraper",
+        "endpoints": ["/api/deals"]
+    }
+
+@app.get("/api/deals")
 def get_deals():
     query = request.args.get('q', 'rice')
-    region = request.args.get('region', 'daraz')
+    # choose source by name: 'daraz' or 'chaldal'
+    source = request.args.get('region', 'daraz').lower()
 
     try:
-        if region == 'chaldal':
+        if source == 'chaldal':
             deals = scrape_chaldal_deals(query)
-        elif region == 'daraz':
-            deals = scrape_daraz_deals(query, 'bd')  # Default to Bangladesh
+        elif source == 'daraz':
+            # country code stays 'bd' unless you want to pass it from client
+            deals = scrape_daraz_deals(query, 'bd')
         else:
-            return jsonify({'error': 'Unsupported region'}), 400
+            return jsonify({'error': 'Unsupported source'}), 400
 
         return jsonify({'deals': deals})
     except Exception as e:
         return jsonify({'error': 'Scraping failed', 'details': str(e)}), 500
 
 if __name__ == '__main__':
-    # Render injects PORT; bind 0.0.0.0 so it's reachable
-    port = int(os.environ.get('PORT', 3000))
+    port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)

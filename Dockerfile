@@ -1,41 +1,36 @@
-# ---- Python + Chromium + Chromedriver image for Selenium scraping ----
+# ---- Python + Chromium (no apt chromedriver) for Selenium scraping ----
 FROM python:3.11-slim
 
-# Avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-# Install system deps, Chromium and Chromedriver
+# System deps + Chromium (NO 'chromium-driver' to avoid version mismatch)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl ca-certificates gnupg unzip wget \
-    chromium chromium-driver fonts-liberation \
-    xvfb \
-    && rm -rf /var/lib/apt/lists/*
+    chromium fonts-liberation xvfb && \
+    rm -rf /var/lib/apt/lists/*
 
-# Make sure chromedriver is on PATH and chromium alias exists
-ENV CHROME_BIN=/usr/bin/chromium \
-    CHROMEDRIVER=/usr/bin/chromedriver \
-    PATH="/usr/local/bin:${PATH}"
-
-# Workdir
+# Let Selenium know where Chromium is
+ENV CHROME_BIN=/usr/bin/chromium
 WORKDIR /app
 
-# Copy requirements first for better caching
+# Python deps
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
-# Copy app source
+# App source
 COPY server.py /app/server.py
+COPY utils_browser.py /app/utils_browser.py
 COPY daraz_selenium_scraper.py /app/daraz_selenium_scraper.py
 COPY chaldal_selenium_scraper.py /app/chaldal_selenium_scraper.py
 
-# Render provides PORT env; default to 3000 locally
-ENV PORT=3000
+# Render provides PORT
+ENV PORT=10000
 
 # Healthcheck (optional)
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD curl --fail http://localhost:${PORT}/api/deals || exit 1
 
-# Start the app
-CMD ["python", "-u", "server.py"]
+# Use a production WSGI server
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:${PORT}", "server:app"]
