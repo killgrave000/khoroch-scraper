@@ -6,6 +6,10 @@ def make_chromium_driver():
     opts = Options()
     # Memory-friendly flags
     opts.add_argument("--headless=new")
+    opts.add_argument("--renderer-process-limit=1")
+    opts.add_argument("--blink-settings=imagesEnabled=false")
+    opts.add_argument("--disable-software-rasterizer")
+    opts.add_argument("--js-flags=--max-old-space-size=64")
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")

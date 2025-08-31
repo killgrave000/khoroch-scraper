@@ -3,7 +3,7 @@ services:
     name: khoroch-deals-scraper
     env: docker
     autoDeploy: true
-    healthCheckPath: /api/deals
+    healthCheckPath: /healthz
     plan: free
     envVars:
       - key: PYTHONUNBUFFERED

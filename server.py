@@ -14,6 +14,12 @@ _inflight = threading.Semaphore(1)
 _CACHE = {}
 _TTL = 300  # 5 minutes
 
+
+@app.get("/healthz")
+def healthz():
+    return {"ok": True}
+
+
 @app.get("/")
 def root():
     return {"ok": True, "service": "khoroch-deals-scraper", "endpoints": ["/api/deals"]}

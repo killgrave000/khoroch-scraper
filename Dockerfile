@@ -17,9 +17,9 @@ RUN pip install -r requirements.txt
 
 COPY server.py utils_browser.py daraz_selenium_scraper.py chaldal_selenium_scraper.py ./
 
-# Healthcheck (optional)
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl --fail http://localhost:${PORT}/api/deals || exit 1
+# cheap healthcheck (does NOT launch Chromium)
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -qO- http://localhost:${PORT:-10000}/healthz || exit 1
 
 # single worker/threads by default; shell form so $PORT expands
 ENV WEB_CONCURRENCY=1 GUNICORN_THREADS=1 GUNICORN_TIMEOUT=180
