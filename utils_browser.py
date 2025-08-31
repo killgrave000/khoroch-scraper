@@ -7,13 +7,11 @@ from webdriver_manager.core.utils import ChromeType
 
 def make_chromium_driver():
     opts = Options()
-    # Container-friendly flags
     opts.add_argument("--headless=new")
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
     opts.add_argument("--window-size=1280,800")
-    # Chromium binary path in the image
     opts.binary_location = os.environ.get("CHROME_BIN", "/usr/bin/chromium")
 
     service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
