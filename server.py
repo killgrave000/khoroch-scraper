@@ -28,7 +28,19 @@ def root():
 def get_deals():
     q = request.args.get('q', 'rice').strip()
     source = request.args.get('region', 'daraz').lower().strip()
-    key = (source, q)
+    area = request.args.get('area', 'Dhanmondi').strip()
+
+    try:
+        if source == 'chaldal':
+            deals = scrape_chaldal_deals(q, area=area)
+        elif source == 'daraz':
+            deals = scrape_daraz_deals(q, 'bd')
+        else:
+            return jsonify({"error": "Unsupported source"}), 400
+        return jsonify({"deals": deals})
+    except Exception as e:
+        return jsonify({"error": "Scraping failed", "details": str(e)}), 500
+
 
     # Serve warm cache
     now = time.time()
